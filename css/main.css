@@ -1,0 +1,25 @@
+.footer {
+	color:#777;
+}
+
+.table>tbody>tr.success>td {
+	background-color:#94FF8F;
+}
+
+.table>tbody>tr.failed>td {
+	background-color: orange;
+}
+
+.table>tbody>tr.progress>td {
+	background-color: yellow;
+}
+
+.table>tbody>tr>td.failed {
+	color: red;
+	font-weight:bold;
+}
+
+.table>tbody>tr>td.success {
+	color: black;
+	font-weight:bold;
+}
