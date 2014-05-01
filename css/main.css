@@ -7,7 +7,7 @@
 }
 
 .table>tbody>tr.failed>td {
-	background-color: orange;
+	background-color: rgb(255, 184, 184);
 }
 
 .table>tbody>tr.progress>td {

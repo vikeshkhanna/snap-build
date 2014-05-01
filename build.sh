@@ -1,13 +1,17 @@
 #!/bin/bash
 
+# If Home env is not set, use AFS path (for cron job)
+HOME="/afs/.ir/users/v/i/vikesh"
+
+PWD=$HOME/cgi-bin/snap-build
 SNAPBUILD_ROOT=$HOME'/snap-build'
 SNAPR_DIR=$SNAPBUILD_ROOT'/snapr'
 SNAPR_GIT='https://github.com/snap-stanford/snapr.git'
-BUILD_DB=`pwd`'/build.db'
+BUILD_DB=$PWD"/build.db"
 
 # Start time
 TSTART=`date +%s`
-LOGBASE_DIR=`pwd`"/logs/"
+LOGBASE_DIR=$PWD"/logs/"
 LOG_FILE="build.$TSTART.log"
 BUILD_LOG="$LOGBASE_DIR""$LOG_FILE"
 
