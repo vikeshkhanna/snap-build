@@ -1,34 +1,45 @@
 #!/bin/bash
+# SNAP build script.
+# @arg ROOT : Root director to place target, logs and db
 
-# If Home env is not set, use AFS path (for cron job)
-HOME="/afs/.ir/users/v/i/vikesh"
+if [ "$#" -ne 1 ]
+then 
+	echo "Illegal number of parameters. ROOT directory is a mandatory parameter."
+	exit 1
+fi
 
-PWD=$HOME/cgi-bin/snap-build
-SNAPBUILD_ROOT=$HOME'/snap-build'
-SNAPR_DIR=$SNAPBUILD_ROOT'/snapr'
-SNAPR_GIT='https://github.com/snap-stanford/snapr.git'
-BUILD_DB=$PWD"/build.db"
+# Root directory. Remove trailing slash, if present.
+ROOT=${1%/}
+PWD=`dirname "$0"`
+
+# Check if ROOT directory exists.
+if [ ! -d "$ROOT" ]
+then
+	echo "ROOT directory must be a valid, existing direcotry"
+	exit 1
+fi
+
+# All projects will be built in TARGET_ROOT/<project_prefix>.<timestamp>/
+# See utils for project_prefix
+TARGET_ROOT="$ROOT/snap-build-target"
+# All project logs will be stoered in LOG_ROOT/<project_prefix>/<project_prefix>.<timestamp>.log
+# See utils for pr
+LOG_ROOT="$ROOT/snap-build-logs"
+# Database file is in this folder.
+DB_ROOT="$ROOT/snap-build-db"
+
+# All tables in this DB.
+BUILD_DB="$DB_ROOT/build.db"
+
+# git endpoints of various repositories
+SNAPR_GIT="https://github.com/snap-stanford/snapr.git"
+SNAP_GIT="https://github.com/snap-stanford/snap.git"
+SNAPPY_GIT="https://github.com/snap-stanford/snap-python.git"
 
 # Start time
 TSTART=`date +%s`
-LOGBASE_DIR=$PWD"/logs/"
 LOG_FILE="build.$TSTART.log"
 BUILD_LOG="$LOGBASE_DIR""$LOG_FILE"
-
-STATUS_QUEUED=-1
-STATUS_SUCCESS=0
-STATUS_FAILED=1
-STATUS_PROGRESS=2
-
-# $1: TSTART, $2: STATUS
-function update_build_status() {
-	echo "UPDATE status SET build_status = $2 WHERE tstart = $1;" | sqlite3 $BUILD_DB
-}
-
-# $1: TSTART, $2: STATUS
-function update_test_status() {
-	echo "UPDATE status SET test_status = $2 WHERE tstart = $1;" | sqlite3 $BUILD_DB
-}
 
 function build() {
 	update_build_status $TSTART $STATUS_PROGRESS
@@ -74,17 +85,17 @@ function gtest() {
 	fi
 }
 
-# Check if snap-build is not present.
-if [ ! -e "$SNAPBUILD_ROOT" ]
-then
-	mkdir $SNAPBUILD_ROOT	
-fi
+# Check if various root directories are not present.
+create_dir_if_not_exists $TARGET_ROOT
+create_dir_if_not_exists $LOG_ROOT
+create_dir_if_not_exists $DB_ROOT
 
-# Check if base log dir is not present.
-if [ ! -e "$LOGBASE_DIR" ]
+# Check if BUILD_DB is not present. Create it using create.sql from the source..
+if [ ! -f $BUILD_DB ]
 then
-	mkdir $LOGBASE_DIR
+	sqlite3 $BUILD_DB < $PWD/db/create.sql
 fi
+exit 0
 
 # If snapr directory is already present, remove it and clone again.
 if [ -e "$SNAPR_DIR" ]
@@ -100,9 +111,9 @@ echo "======================= CLONING SNAPR REPOSITORYY ======================="
 git clone $SNAPR_GIT $SNAPR_DIR | tee -a $BUILD_LOG
 
 # Make
-build
+# build
 # GTest
-gtest
+# gtest
 
 # Update tend
 TEND=`date +%s`
