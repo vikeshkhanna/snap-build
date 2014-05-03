@@ -41,10 +41,10 @@ $sec = "30";
 							<th>Logs</th>
 						</tr>
 						<?php
-							include('sqlitedb.php');
+							include('db/sqlitedb.php');
 							$db = get_db_handle();
 							$db->beginTransaction();
-							$comm = "SELECT * FROM status ORDER BY tstart DESC LIMIT 10;";
+							$comm = "SELECT * FROM snapr ORDER BY tstart DESC LIMIT 10;";
 							$result = $db->prepare($comm);
 							$result->execute();
 							$db->commit();

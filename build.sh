@@ -40,28 +40,25 @@ DB_FILE="$DB_ROOT/build.db"
 LOG_FILE="build.$TSTART.log"
 BUILD_LOG="$LOGBASE_DIR""$LOG_FILE"
 
-function gtest() {
-}
-
 # Check if various root directories are not present.
 create_dir_if_not_exists $TARGET_ROOT
 create_dir_if_not_exists $LOG_ROOT
 create_dir_if_not_exists $DB_ROOT
+
+echo "All logs are present under LOG Root: $LOG_ROOT"
+echo "All builds are present under TARGET Root: $TARGET_ROOT" 
 
 # Check if BUILD_DB is not present. Create it using create.sql from the source..
 if [ ! -f $DB_FILE ]
 then
 	sqlite3 $DB_FILE < $PWD/db/create.sql
 fi
-exit 0
 
-# If snapr directory is already present, remove it and clone again.
-if [ -e "$SNAPR_DIR" ]
-then
-	rm -rf $SNAPR_DIR
-fi
+# Call each build script
+$PWD/build_snap.sh $TARGET_ROOT $LOG_ROOT $DB_FILE &
+$PWD/build_snapr.sh $TARGET_ROOT $LOG_ROOT $DB_FILE &
+$PWD/build_snappy.sh $TARGET_ROOT $LOG_ROOT $DB_FILE & 
 
-# Make
-# build
-# GTest
-# gtest
+echo "====== Waiting for project builds.... ========"
+wait;
+echo "All projects build finished"
