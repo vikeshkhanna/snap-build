@@ -17,7 +17,7 @@ SNAPPY_PREFIX="snappy"
 # Tablenames as used in create.sql
 SNAP_TBL_NAME="snap"
 SNAPR_TBL_NAME="snapr"
-SNAPPY_TBL_NAME="snapppy"
+SNAPPY_TBL_NAME="snappy"
 
 # git endpoints of various repositories
 SNAPR_GIT="https://github.com/snap-stanford/snapr.git"
@@ -29,10 +29,19 @@ function update_build_status() {
 	echo "UPDATE $1 SET build_status = $4 WHERE tstart = $3;" | sqlite3 $2
 }
 
-# $1: Tablename, $2: Full path to DB, $3: TSTART, $3: STATUS
+# $1: Tablename, $2: Full path to DB, $3: TSTART, $4: STATUS
 function update_test_status() {
 	echo "UPDATE $1 SET test_status = $4 WHERE tstart = $3;" | sqlite3 $2
 }
+
+# $1: Tablename, $2: Full path to DB, $3: TSTART
+function update_tend() {
+	local TEND=`date +%s`
+	echo "UPDATE $1 SET tend = $TEND WHERE tstart = $3;" | sqlite3 $2
+}
+
+
+
 
 # Checks if a directory does not exist and creates it.
 # Note that it uses the -p switch to create any non-existent directories on the way.
@@ -45,20 +54,23 @@ function create_dir_if_not_exists() {
 	fi
 }
 
-# Builds SNAPR.
-# @arg $1 - SNAPR_DIR - Directory of the snapr source.
-# @arg $1 - TSTART (Start time used to identify this build)
-# @arg $2 - DB_FILE - Full File Path to the DB file
-# @arg $3 - LOG_FILE - Full path to the log file.
-function build_snapr() {
-	local SNAPR_DIR=$1
+# ************* COMMON BUILD ************** #
+# Builds SNAPR/SNAP/SNAPPY. Does SOURCE_DIR/make and SOURCE_DIR/test/make
+# @arg $1 - SOURCE_DIR - Directory of the source.
+# @arg $2 - TSTART (Start time used to identify this build)
+# @arg $3 - DB_FILE - Full File Path to the DB file
+# @arg $4 - LOG_FILE - Full path to the log file.
+# @arg $5 - TBL_NAME - Name of the table to be updated.
+function build_common() {
+	local SOURCE_DIR=$1
 	local TSTART=$2
 	local DB_FILE=$3
 	local LOG_FILE=$4
+	local TBL_NAME=$5
 
 	# ========================= MAKE BEGINS ====================================== 
-	update_build_status $SNAPR_TBL_NAME $DB_FILE $TSTART $STATUS_PROGRESS
-	cd $SNAPR_DIR
+	update_build_status $TBL_NAME $DB_FILE $TSTART $STATUS_PROGRESS
+	cd $SOURCE_DIR
 	echo "======================= MAKING. START TIME = `date` =======================" | tee -a $LOG_FILE
 	make >> $LOG_FILE 2>&1
 	local RESULT=$?
@@ -69,44 +81,55 @@ function build_snapr() {
 	then
 		# Build failed. Update DB entry.
 		echo "======================= MAKE FAILED =======================" | tee -a $LOG_FILE
-		update_build_status $SNAPR_TBL_NAME $DB_FILE $TSTART $STATUS_FAILED 
+		update_build_status $TBL_NAME $DB_FILE $TSTART $STATUS_FAILED 
 	else
 		# Build succeeded. Update DB entry.
 		echo "======================= MAKE SUCCEEDED =======================" | tee -a $LOG_FILE
-		update_build_status $SNAPR_TBL_NAME $DB_FILE $TSTART $STATUS_SUCCESS
+		update_build_status $TBL_NAME $DB_FILE $TSTART $STATUS_SUCCESS
 	fi
 }
 
-# Tests SNAPR.
-# @arg $1 - SNAPR_DIR - Directory of the snapr source.
-# @arg $1 - TSTART (Start time used to identify this build)
-# @arg $2 - DB_FILE - Full File Path to the DB file
-# @arg $3 - LOG_FILE - Full path to the log file.
-function test_snapr() {
-	local SNAPR_DIR=$1
+
+# Tests SNAPR/SNAP/SNAPPY. Does SOURCE_DIR/make and SOURCE_DIR/test/make
+# @arg $1 - SOURCE_DIR - Directory of the source.
+# @arg $2 - TSTART (Start time used to identify this build)
+# @arg $3 - DB_FILE - Full File Path to the DB file
+# @arg $4 - LOG_FILE - Full path to the log file.
+# @arg $5 - TBL_NAME - Name of the table to be updated.
+function test_common() {
+	local SOURCE_DIR=$1
 	local TSTART=$2
 	local DB_FILE=$3
 	local LOG_FILE=$4
+	local TBL_NAME=$5
 
-	# ================================== GTEST BEGINS =======================* 
-	cd "$SNAPR_DIR/test"
-	echo "======================= GTEST BEGINS. START TIME = `date` =======================" | tee -a $LOG_FILE
-	update_test_status $SNAPR_TBL_NAME $DB_FILE $TSTART $STATUS_PROGRESS
+	# ================================== TEST BEGINS =======================* 
+	cd "$SOURCE_DIR/test"
+	echo "======================= TEST BEGINS. START TIME = `date` =======================" | tee -a $LOG_FILE
+	update_test_status $TBL_NAME $DB_FILE $TSTART $STATUS_PROGRESS
 
 	make >> $LOG_FILE 2>&1
-	make run >> $DB_FILE 2>&1
 	local RESULT=$?
-	echo "======================= GTEST FINISH. TIME = `date` =======================" | tee -a $LOG_FILE
+
+	# make run is not required for snappy.
+	if [ ! "$TBL_NAME" == "$SNAPPY_TBL_NAME" ] 
+	then 
+		make run >> $LOG_FILE 2>&1
+		local RESULT=$?
+	fi
+
+	echo "======================= TEST FINISH. TIME = `date` =======================" | tee -a $LOG_FILE
 
 	# Check exit status and take appropriate action $?
 	if [ $RESULT -ne 0 ]
 	then
 		# Test failed. Update DB entry.
 		echo "======================= GTEST FAILED =======================" | tee -a $LOG_FILE
-		update_test_status $SNAPR_TBL_NAME $DB_FILE $TSTART $STATUS_FAILED
+		update_test_status $TBL_NAME $DB_FILE $TSTART $STATUS_FAILED
 	else
 		# Test succeeded. Update DB entry.
 		echo "======================= GTEST SUCCEEDED =======================" | tee -a $LOG_FILE
-		update_test_status $SNAPR_TBL_NAME $DB_FILE $TSTART $STATUS_SUCCESS
+		update_test_status $TBL_NAME $DB_FILE $TSTART $STATUS_SUCCESS
 	fi
 }
+# ************* ENDS COMMON BUILD ************** #
