@@ -65,7 +65,3 @@ fi
 # build
 # GTest
 # gtest
-
-# Update tend
-TEND=`date +%s`
-echo "UPDATE status SET tend=$TEND WHERE tstart = $TSTART;" | sqlite3 $BUILD_DB

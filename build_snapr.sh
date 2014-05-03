@@ -1,6 +1,6 @@
 #!/bin/bash
 # Script to build (make and test) snapr. 
-# Assumes all directories are created.
+# Assumes all root directories are created.
 # @arg $1 : TARGET_ROOT : Root directory for targets.
 # @arg $2 : LOG_ROOT : Root directory for logs
 # @arg $3 : DB_FILE : Full path to the build db
@@ -27,6 +27,8 @@ LOG_DIR="$LOG_ROOT/$SNAPR_PREFIX"
 LOG_FILE_NAME="$SNAPR_PREFIX.$TSTART.log"
 LOG_FILE="$LOG_DIR/$LOG_FILE_NAME"
 
+echo "LOGGING in $LOG_FILE"
+
 create_dir_if_not_exists $TARGET_DIR
 create_dir_if_not_exists $LOG_DIR
 
@@ -37,5 +39,6 @@ echo "INSERT INTO $SNAPR_TBL_NAME VALUES(NULL, $TSTART, 0, $STATUS_PROGRESS, $ST
 echo "======================= CLONING SNAPR REPOSITORYY =======================" | tee -a $LOG_FILE
 git clone $SNAPR_GIT $SNAPR_DIR | tee -a $LOG_FILE
 
-build_snapr $SNAPR_DIR $TSTART $DB_FILE $LOG_FILE
-test_snapr $SNAPR_DIR $TSTART $DB_FILE $LOG_FILE
+build_common $SNAPR_DIR $TSTART $DB_FILE $LOG_FILE $SNAPR_TBL_NAME
+test_common $SNAPR_DIR $TSTART $DB_FILE $LOG_FILE $SNAPR_TBL_NAME
+update_tend $SNAPR_TBL_NAME $DB_FILE $TSTART
