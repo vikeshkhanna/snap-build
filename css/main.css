@@ -23,3 +23,27 @@
 	color: black;
 	font-weight:bold;
 }
+
+div.project-summary {
+	display : inline-block;
+	margin-right : 15px;
+	border-left: 3px solid #5bc0de;
+}
+
+.project-summary * {
+	display: block;
+	padding: 5px;
+	margin: 5px;
+}
+
+.success {
+	background-color:#94FF8F;
+}
+
+.failed {
+	background-color: rgb(255, 179, 179);
+}
+
+ul.nav-tabs>li>a {
+	cursor:pointer;
+}
