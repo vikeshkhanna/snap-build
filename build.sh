@@ -57,7 +57,7 @@ fi
 # Call each build script
 $PWD/build_snap.sh $TARGET_ROOT $LOG_ROOT $DB_FILE &
 $PWD/build_snapr.sh $TARGET_ROOT $LOG_ROOT $DB_FILE &
-$PWD/build_snappy.sh $TARGET_ROOT $LOG_ROOT $DB_FILE & 
+$PWD/build_snappy.sh $TARGET_ROOT $LOG_ROOT $DB_FILE &
 
 echo "====== Waiting for project builds.... ========"
 wait;
