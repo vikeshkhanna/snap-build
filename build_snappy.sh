@@ -19,9 +19,10 @@ PWD=`dirname "$0"`
 # Include the utils directory
 source "$PWD/utils.sh"
 
-set_vars $SNAPPY_TBL_NAME $TARGET_ROOT $LOG_ROOT
-
 # Note that snap-python requires both snappy and snap.
+SNAPPY_TBL_NAME=$PROJECT_NAME_CONST_SNAPPY
+SNAP_TBL_NAME=$PROJECT_NAME_CONST_SNAP
+set_vars $SNAPPY_TBL_NAME $TARGET_ROOT $LOG_ROOT
 SNAPPY_DIR="$TARGET_DIR/$SNAPPY_TBL_NAME"
 SNAP_DIR="$TARGET_DIR/$SNAP_TBL_NAME"
 

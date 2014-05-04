@@ -55,9 +55,12 @@ then
 fi
 
 # Call each build script
-$PWD/build_snap.sh $TARGET_ROOT $LOG_ROOT $DB_FILE &
-$PWD/build_snapr.sh $TARGET_ROOT $LOG_ROOT $DB_FILE &
-$PWD/build_snappy.sh $TARGET_ROOT $LOG_ROOT $DB_FILE &
+PROJECT_LIST=( ${!PROJECT_NAME_CONST_*} )
+for project in "${PROJECT_LIST[@]}"
+do
+	PROJECT_NAME="${!project}"
+	$PWD/build_$PROJECT_NAME.sh $TARGET_ROOT $LOG_ROOT $DB_FILE &
+done;
 
 echo "====== Waiting for project builds.... ========"
 wait;

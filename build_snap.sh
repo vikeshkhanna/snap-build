@@ -19,6 +19,7 @@ PWD=`dirname "$0"`
 # Include the utils directory
 source "$PWD/utils.sh"
 
+SNAP_TBL_NAME=$PROJECT_NAME_CONST_SNAP
 set_vars $SNAP_TBL_NAME $TARGET_ROOT $LOG_ROOT
 SNAP_DIR="$TARGET_DIR/$SNAP_TBL_NAME"
 

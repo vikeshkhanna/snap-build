@@ -1,27 +1,34 @@
 # Utility script. This script has several re-usable functions used by the build system.
 # Recommended usage is to source this script in other build scripts. source ./utils.sh
 
+# ===== Configurable parameters ======= #
+# Mail address in case of error.
+MAIL_ADDRESS="vikesh@stanford.edu"
+
+# PROJECT_NAME_CONST_* uniquely identifies each project. These variables are used in several ways -
+# Project name MUST match the tables in build.db created using create.sql
+# Project names are used as prefixes to create directories for target and logging.
+# Build scripts for each project MUST match the build_<project_name>.sh naming convention.
+# Common prefixes to be used by the build scripts for logs and target : 
+# Logs - LOG_ROOT/<prefix>/<prefix>.<timestamp>.log
+# Target - TARGET_ROOT/<prefix>.<timestamp>/<git repos>
+PROJECT_NAME_CONST_SNAP="snap"
+PROJECT_NAME_CONST_SNAPR="snapr"
+PROJECT_NAME_CONST_SNAPPY="snappy"
+
+# ===== ENDS Configurable parameters ======= #
+
 # Status constants will be available to all build scripts after sourcing. 
 STATUS_QUEUED=-1
 STATUS_SUCCESS=0
 STATUS_FAILED=1
 STATUS_PROGRESS=2
 
-# Tablenames as used in create.sql - These will also be used as prefixes to uniquely identify each project.
-# Common prefixes to be used by the build scripts for logs and target : 
-# Logs - LOG_ROOT/<prefix>/<prefix>.<timestamp>.log
-# Target - TARGET_ROOT/<prefix>.<timestamp>/<git repos>
-SNAP_TBL_NAME="snap"
-SNAPR_TBL_NAME="snapr"
-SNAPPY_TBL_NAME="snappy"
-
 # git endpoints of various repositories
 SNAPR_GIT="https://github.com/snap-stanford/snapr.git"
 SNAP_GIT="https://github.com/snap-stanford/snap.git"
 SNAPPY_GIT="https://github.com/snap-stanford/snap-python.git"
 
-# Mail address in case of error.
-MAIL_ADDRESS="vikesh@stanford.edu"
 
 # Send mail to the given address.
 # @arg $1 : Recipient Address
@@ -29,7 +36,7 @@ MAIL_ADDRESS="vikesh@stanford.edu"
 # @arg $3 : Body.
 # @arg $4 : Full path of the file to attach.
 function send_mail() {
-	echo $3 | mutt -a $4 -s $2 -- $1
+	echo "$3" | mutt -a "$4" -s "$2" -- $1
 	return $?
 }
 
@@ -207,7 +214,7 @@ function process_common() {
 
 	if [ "$BUILD_RESULT" -ne 0 ] || [ "$TEST_RESULT" -ne 0 ] 
 	then
-		send_mail $MAIL_ADRESS "Project $TBL_NAME build is unhealthy" "Please see the log file at $LOG_FILE (also attached) and take corrective action." $LOG_FILE
+		send_mail $MAIL_ADDRESS "Project $TBL_NAME build is unhealthy" "Please see the log file at $LOG_FILE (also attached) and take corrective action." $LOG_FILE
 	else
 		return 0
 	fi
