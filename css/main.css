@@ -1,16 +1,29 @@
+body {
+	background-color: #b2b2b2;
+}
+
+.container {
+	background-color:white;
+	padding: 5px 40px 10px 40px;
+}
+
 .footer {
 	color:#777;
 }
 
-.table>tbody>tr.success>td {
+#project-summary-container {
+	margin-top:20px;
+}
+
+.table>tbody>tr.success>td, li.project-summary.success {
 	background-color:#94FF8F;
 }
 
-.table>tbody>tr.failed>td {
+.table>tbody>tr.failed>td, li.project-summary.failed {
 	background-color: rgb(255, 184, 184);
 }
 
-.table>tbody>tr.inprogress>td {
+.table>tbody>tr.inprogress>td, li.project-summary.inprogress {
 	background-color: yellow;
 }
 
@@ -44,15 +57,6 @@ ul.nav-tabs>li>a {
 	display: inline-block;
 }
 
-li.project-summary.success {
-	background-color:#94FF8F;
-}
-
-li.project-summary.inprogress {
-	background-color: yellow;
-}
-
 li.project-summary.failed {
-	background-color: rgb(255, 184, 184);
 	font-weight:bold;
 }

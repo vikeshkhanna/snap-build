@@ -1,9 +1,3 @@
-<?php
-$page = $_SERVER['PHP_SELF'];
-$sec = "3000000000";
-
-/* Add project here to extend */
-?>
 <html>
 	<head>
 		<title>SNAP build dashboard</title>
@@ -18,9 +12,6 @@ $sec = "3000000000";
 				// Refreshes frequently through an AJAX request.
 				var currentBuildData;
 				var currentActiveProject = null;
-
-				// Maps the project key to the li element.
-				var projectElementMap;
 
 				var statusLabelMap = {
 						"0" : "Successful",
@@ -136,28 +127,28 @@ $sec = "3000000000";
 								currentActiveProject = projectNames[0];
 							}
 
-								// Create project summary for latest build and test status.
-								// Clear the project summary div.
-								$("#project-summary-container").empty();
+							// Create project summary for latest build and test status.
+							// Clear the project summary div.
+							$("#project-summary-container").empty();
 
-								// For each project, add the the latest build summary to the project-summary-container div.
-								for(projectName in response) {
-									var latestBuildStatus = parseInt(response[projectName]["rows"][0]["build_status"])
-									var latestTestStatus = parseInt(response[projectName]["rows"][0]["test_status"]);
-									var label = response[projectName]["label"];
+							// For each project, add the the latest build summary to the project-summary-container div.
+							for(projectName in response) {
+								var latestBuildStatus = parseInt(response[projectName]["rows"][0]["build_status"])
+								var latestTestStatus = parseInt(response[projectName]["rows"][0]["test_status"]);
+								var label = response[projectName]["label"];
 
-									$("<li />")
-										.attr('class', 'project-summary ' + getRowClass(latestBuildStatus, latestTestStatus))
-										.append("<h3>" + label + "</h3>")
-										.append("<span>Build " + statusLabelMap[latestBuildStatus] + "</span>")
-										.append("<span>Test  " + statusLabelMap[latestTestStatus] + "</span>")
-										.appendTo("#project-summary-container");
-								}
+								$("<li />")
+									.attr('class', 'project-summary ' + getRowClass(latestBuildStatus, latestTestStatus))
+									.append("<h3>" + label + "</h3>")
+									.append("<span>Build " + statusLabelMap[latestBuildStatus] + "</span>")
+									.append("<span>Test  " + statusLabelMap[latestTestStatus] + "</span>")
+									.appendTo("#project-summary-container");
+							}
 							refresh(response[currentActiveProject]);
 						});
 					}
 
-					setInterval(fetchAndRefreshData, 30000);
+					setInterval(fetchAndRefreshData, 30*1000);
 					fetchAndRefreshData();
 				});
 		</script>
@@ -165,7 +156,7 @@ $sec = "3000000000";
 	
 	<body>
 		<div class="container">
-			<div class="header"><h3 class="text-muted">SNAP Build dashboard<h3></div>
+			<div class="header"><h3 class="text-muted">SNAP Build Dashboard<h3></div>
 				<ul id="project-summary-container" class="list-inline">
 				</ul>
 
