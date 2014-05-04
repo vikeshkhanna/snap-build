@@ -22,3 +22,8 @@ To incorporate more projects into the framework, do the following steps -
 4. Follow the conventions in build_snap.sh to set required variables and call the common utility functions in `utils.sh`. If the build process for the project differs significantly from the `*_common` methods in `utils.sh`, implement the new build methods in `utils.sh` with maximum code reusability. The master build script (`build.sh`) will automatically call your project since you followed the `PROJECT_NAME_CONST_*` naming convention.
 5. [Optional] Appropriately edit the front end (`index.php`) to show the status of the new project, or use the DB in any other way.
 
+
+### Sample commands
+`./build.sh /lfs/local/0`
+`./build_snap.sh /lfs/local/0/snap-build-target /lfs/local/0/snap-build-logs /lfs/local/0/snap-build-db/build.db`
+
