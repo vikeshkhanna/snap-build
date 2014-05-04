@@ -14,6 +14,8 @@ CREATE TABLE snap (
 	logs text
 );
 
+CREATE UNIQUE INDEX IF NOT EXISTS snap_tstart on snap(tstart);
+
 CREATE TABLE snapr (
 	id integer primary key autoincrement,
 	tstart integer,
@@ -23,6 +25,8 @@ CREATE TABLE snapr (
 	logs text
 );
 
+CREATE UNIQUE INDEX IF NOT EXISTS snapr_tstart on snap(tstart);
+
 CREATE TABLE snappy (
 	id integer primary key autoincrement,
 	tstart integer,
@@ -31,3 +35,5 @@ CREATE TABLE snappy (
 	test_status integer,
 	logs text
 );
+
+CREATE UNIQUE INDEX IF NOT EXISTS snappy_tstart on snap(tstart);
