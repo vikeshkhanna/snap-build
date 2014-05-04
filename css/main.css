@@ -10,7 +10,7 @@
 	background-color: rgb(255, 184, 184);
 }
 
-.table>tbody>tr.progress>td {
+.table>tbody>tr.inprogress>td {
 	background-color: yellow;
 }
 
@@ -21,29 +21,38 @@
 
 .table>tbody>tr>td.success {
 	color: black;
-	font-weight:bold;
-}
-
-div.project-summary {
-	display : inline-block;
-	margin-right : 15px;
-	border-left: 3px solid #5bc0de;
-}
-
-.project-summary * {
-	display: block;
-	padding: 5px;
-	margin: 5px;
-}
-
-.success {
-	background-color:#94FF8F;
-}
-
-.failed {
-	background-color: rgb(255, 179, 179);
 }
 
 ul.nav-tabs>li>a {
 	cursor:pointer;
+}
+
+#project-builds-nav {
+	margin-top: 25px;
+}
+
+.project-summary {
+	margin-right: 20px;
+	border-left: 1px solid blue;
+}
+
+.project-summary * {
+	margin:10px;
+}
+
+.project-summary span {
+	display: inline-block;
+}
+
+li.project-summary.success {
+	background-color:#94FF8F;
+}
+
+li.project-summary.inprogress {
+	background-color: yellow;
+}
+
+li.project-summary.failed {
+	background-color: rgb(255, 184, 184);
+	font-weight:bold;
 }
