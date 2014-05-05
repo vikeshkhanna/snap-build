@@ -29,7 +29,7 @@
 
 				$(document).ready(function() {
 
-					function refresh(data) {
+					function refresh(projectName, data) {
 						var dataContainer = $("#project-builds");
 						var rows = data["rows"];
 						var label = data["label"];
@@ -53,7 +53,7 @@
 									"<td>" + row["tend"] +"</td>" + 
 									"<td class='" + statusClassMap[row['build_status']] + "'>" + statusLabelMap[row["build_status"]] +"</td>" + 
 									"<td class='" + statusClassMap[row['test_status']] + "'>" + statusLabelMap[row["test_status"]] +"</td>" + 
-									"<td><a target='_blank' href='logs/" + row["key"] + "/" + row["logs"] +"'>" + row["logs"] + "</a></td>"
+									"<td><a target='_blank' href='logs/" + projectName + "/" + row["logs"] +"'>" + row["logs"] + "</a></td>"
 								)
 							);
 						}
@@ -83,7 +83,7 @@
 					function createTabHandler(projectName) {
 						return function(e) {
 							// Refresh the data in the table.
-							refresh(currentBuildData[projectName]);
+							refresh(projectName, currentBuildData[projectName]);
 
 							// Change the current active project.
 							var currentActiveTabSelector = "#" + currentActiveProject;
@@ -144,7 +144,7 @@
 									.append("<span>Test  " + statusLabelMap[latestTestStatus] + "</span>")
 									.appendTo("#project-summary-container");
 							}
-							refresh(response[currentActiveProject]);
+							refresh(currentActiveProject, response[currentActiveProject]);
 						});
 					}
 
