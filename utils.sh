@@ -2,7 +2,7 @@
 # Recommended usage is to source this script in other build scripts. source ./utils.sh
 
 # ===== Configurable parameters ======= #
-# Mail address in case of error.
+# Mail address(es) in case of error. Space separated.
 MAIL_ADDRESS="vikesh@stanford.edu"
 
 # PROJECT_NAME_CONST_* uniquely identifies each project. These variables are used in several ways -
@@ -214,7 +214,7 @@ function process_common() {
 
 	if [ "$BUILD_RESULT" -ne 0 ] || [ "$TEST_RESULT" -ne 0 ] 
 	then
-		send_mail $MAIL_ADDRESS "Project $TBL_NAME build is unhealthy" "Please see the log file at $LOG_FILE (also attached) and take corrective action." $LOG_FILE
+		send_mail "$MAIL_ADDRESS" "Project $TBL_NAME build is unhealthy" "Please see the log file at $LOG_FILE (also attached) and take corrective action." $LOG_FILE
 	else
 		return 0
 	fi
