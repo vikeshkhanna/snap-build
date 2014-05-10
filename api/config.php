@@ -7,6 +7,7 @@
 		"snap" => "snap",
 		"snapr" => "snapr",
 		"snappy" => "snap-python"
+		"ringo" => "ringo"
 	);
 	/* Ends configuration */
 ?>

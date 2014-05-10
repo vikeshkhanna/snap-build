@@ -3,6 +3,7 @@
 
 # ===== Configurable parameters ======= #
 # Mail address(es) in case of error. Space separated.
+#MAIL_ADDRESS="snap-platform@googlegroups.com"
 MAIL_ADDRESS="vikesh@stanford.edu"
 
 # PROJECT_NAME_CONST_* uniquely identifies each project. These variables are used in several ways -
@@ -15,6 +16,7 @@ MAIL_ADDRESS="vikesh@stanford.edu"
 PROJECT_NAME_CONST_SNAP="snap"
 PROJECT_NAME_CONST_SNAPR="snapr"
 PROJECT_NAME_CONST_SNAPPY="snappy"
+PROJECT_NAME_CONST_RINGO="ringo"
 
 # ===== ENDS Configurable parameters ======= #
 
@@ -28,7 +30,7 @@ STATUS_PROGRESS=2
 SNAPR_GIT="https://github.com/snap-stanford/snapr.git"
 SNAP_GIT="https://github.com/snap-stanford/snap.git"
 SNAPPY_GIT="https://github.com/snap-stanford/snap-python.git"
-
+RINGO_GIT="git@github.com:snap-stanford/ringo.git"
 
 # Send mail to the given address.
 # @arg $1 : Recipient Address
@@ -163,17 +165,22 @@ function test_common() {
 	local TBL_NAME=$5
 
 	# ================================== TEST BEGINS =======================* 
-	cd "$SOURCE_DIR/test"
 	echo "======================= TEST $TBL_NAME BEGINS. START TIME = `date` =======================" | tee -a $LOG_FILE
 	update_test_status $TBL_NAME $DB_FILE $TSTART $STATUS_PROGRESS
 
-	make >> $LOG_FILE 2>&1
-	local RESULT=$?
 
-	# make run is not required for snappy.
-	if [ ! "$TBL_NAME" == "$SNAPPY_TBL_NAME" ] 
+	# Currently snap does not support make test in the top-level Makefile.
+	# For all others, make test from SOURCE_DIR will run tests appropriately.
+	if [ "$TBL_NAME" == "$SNAP_TBL_NAME" ] 
 	then 
+		cd "$SOURCE_DIR/test"
+		make >> $LOG_FILE 2>&1
+		local RESULT=$?
 		make run >> $LOG_FILE 2>&1
+		local RESULT=$?
+	else
+		cd "$SOURCE_DIR"
+		make test >> $LOG_FILE 2>&1
 		local RESULT=$?
 	fi
 
@@ -214,7 +221,7 @@ function process_common() {
 
 	if [ "$BUILD_RESULT" -ne 0 ] || [ "$TEST_RESULT" -ne 0 ] 
 	then
-		send_mail "$MAIL_ADDRESS" "Project $TBL_NAME build is unhealthy" "Please see the log file at $LOG_FILE (also attached) and take corrective action." $LOG_FILE
+		send_mail "$MAIL_ADDRESS" "Project $TBL_NAME build failed." "Please see the attached log file and take corrective action. The status will be refreshed at http://snap.stanford.edu/snapbuild/ soon." $LOG_FILE
 	else
 		return 0
 	fi

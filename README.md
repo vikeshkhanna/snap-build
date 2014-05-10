@@ -1,7 +1,7 @@
 SNAP-BUILD
 ==========
 
-snap-build is the integrated build system for Stanford [SNAP](http://snap.stanford.edu) projects. Currently supported projects are - snap, snapr, snap-python.
+snap-build is the integrated build system for Stanford [SNAP](http://snap.stanford.edu) projects. Currently supported projects are - snap, snapr, snap-python and ringo.
 
 ### Prerequisistes
 The build system has the same pre-requisites as the various SNAP projects it supports. Please read the prerequisites of each SNAP project supported to ensure make and test work. Google Test setup is usually the one that requires some time. `snap-build` also requires an **SMTP configured server** (to send mails on build failure) and **sqlite3** installed.
