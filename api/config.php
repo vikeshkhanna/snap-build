@@ -6,7 +6,7 @@
 	$PROJECTS = array(
 		"snap" => "snap",
 		"snapr" => "snapr",
-		"snappy" => "snap-python"
+		"snappy" => "snap-python",
 		"ringo" => "ringo"
 	);
 	/* Ends configuration */
