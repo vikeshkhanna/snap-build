@@ -38,7 +38,7 @@ RINGO_GIT="git@github.com:snap-stanford/ringo.git"
 # @arg $3 : Body.
 # @arg $4 : Full path of the file to attach.
 function send_mail() {
-	echo "$3" | mutt -a "$4" -s "$2" -- $1
+	echo "$3" | mail -s "$2" -a "$4" "$1"
 	return $?
 }
 
