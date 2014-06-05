@@ -1,36 +1,14 @@
 # Utility script. This script has several re-usable functions used by the build system.
 # Recommended usage is to source this script in other build scripts. source ./utils.sh
-
-# ===== Configurable parameters ======= #
-# Mail address(es) in case of error. Space separated.
-#MAIL_ADDRESS="snap-platform@googlegroups.com"
-MAIL_ADDRESS="vikesh@stanford.edu"
-
-# PROJECT_NAME_CONST_* uniquely identifies each project. These variables are used in several ways -
-# Project name MUST match the tables in build.db created using create.sql
-# Project names are used as prefixes to create directories for target and logging.
-# Build scripts for each project MUST match the build_<project_name>.sh naming convention.
-# Common prefixes to be used by the build scripts for logs and target : 
-# Logs - LOG_ROOT/<prefix>/<prefix>.<timestamp>.log
-# Target - TARGET_ROOT/<prefix>.<timestamp>/<git repos>
-PROJECT_NAME_CONST_SNAP="snap"
-PROJECT_NAME_CONST_SNAPR="snapr"
-PROJECT_NAME_CONST_SNAPPY="snappy"
-PROJECT_NAME_CONST_RINGO="ringo"
-
-# ===== ENDS Configurable parameters ======= #
+#
+# @author:
+# Vikesh Khanna (vikesh@stanford.edu)
 
 # Status constants will be available to all build scripts after sourcing. 
 STATUS_QUEUED=-1
 STATUS_SUCCESS=0
 STATUS_FAILED=1
 STATUS_PROGRESS=2
-
-# git endpoints of various repositories
-SNAPR_GIT="https://github.com/snap-stanford/snapr.git"
-SNAP_GIT="https://github.com/snap-stanford/snap.git"
-SNAPPY_GIT="https://github.com/snap-stanford/snap-python.git"
-RINGO_GIT="git@github.com:snap-stanford/ringo.git"
 
 # Send mail to the given address.
 # @arg $1 : Recipient Address
@@ -79,12 +57,6 @@ function update_test_status() {
 	do_sql "UPDATE $1 SET test_status = $4 WHERE tstart = $3;" $2
 }
 
-# $1: Tablename, $2: Full path to DB, $3: TSTART
-function update_tend() {
-	local TEND=`date +%s`
-	do_sql "UPDATE $1 SET tend = $TEND WHERE tstart = $3;" $2
-}
-
 # Checks if a directory does not exist and creates it.
 # Note that it uses the -p switch to create any non-existent directories on the way.
 # @args $1 : DIRECTORY : Directory path.
@@ -94,164 +66,4 @@ function create_dir_if_not_exists() {
 	then
 		mkdir -p $DIRECTORY
 	fi
-}
-
-# Sets the required variables for project build scripts - TSTART, TARGET_DIR, LOG_FILE_NAME and LOG_FILE
-# @arg $1 : PROJECT_TBL_NAME
-# @arg $2 : TARGET_ROOT
-# @arg $3 : LOG_ROOT
-function set_vars() {
-	local PROJECT_TBL_NAME=$1
-	local TARGET_ROOT=$2
-	local LOG_ROOT=$3
-
-	TSTART=`date +%s`
-	# Following the Target path naming convention mentioned in utils.sh - TARGET_ROOT/snap.<timestamp>/snap/.git
-	TARGET_DIR="$TARGET_ROOT/$PROJECT_TBL_NAME.$TSTART"
-	LOG_DIR="$LOG_ROOT/$PROJECT_TBL_NAME"
-	LOG_FILE_NAME="$PROJECT_TBL_NAME.$TSTART.log"
-	LOG_FILE="$LOG_DIR/$LOG_FILE_NAME"
-
-	echo "LOGGING in $LOG_FILE"
-}
-
-# ************* COMMON BUILD ************** #
-# Builds SNAPR/SNAP/SNAPPY. Does SOURCE_DIR/make and SOURCE_DIR/test/make
-# @arg $1 - SOURCE_DIR - Directory of the source.
-# @arg $2 - TSTART (Start time used to identify this build)
-# @arg $3 - DB_FILE - Full File Path to the DB file
-# @arg $4 - LOG_FILE - Full path to the log file.
-# @arg $5 - TBL_NAME - Name of the table to be updated.
-function build_common() {
-	local SOURCE_DIR=$1
-	local TSTART=$2
-	local DB_FILE=$3
-	local LOG_FILE=$4
-	local TBL_NAME=$5
-
-
-	# ========================= MAKE BEGINS ====================================== 
-	update_build_status $TBL_NAME $DB_FILE $TSTART $STATUS_PROGRESS
-	cd $SOURCE_DIR
-	echo "======================= MAKING $TBL_NAME. START TIME = `date` =======================" | tee -a $LOG_FILE
-	make >> $LOG_FILE 2>&1
-	local RESULT=$?
-	echo "======================= MAKE FINISH. TIME = `date` =======================" | tee -a $LOG_FILE
-
-	# Check exit status and take appropriate action $?
-	if [ $RESULT -ne 0 ]
-	then
-		# Build failed. Update DB entry.
-		echo "======================= MAKE $TBL_NAME FAILED =======================" | tee -a $LOG_FILE
-		update_build_status $TBL_NAME $DB_FILE $TSTART $STATUS_FAILED 
-	else
-		# Build succeeded. Update DB entry.
-		echo "======================= MAKE $TBL_NAME SUCCEEDED =======================" | tee -a $LOG_FILE
-		update_build_status $TBL_NAME $DB_FILE $TSTART $STATUS_SUCCESS
-	fi
-	return $RESULT;
-}
-
-# Tests SNAPR/SNAP/SNAPPY. Does SOURCE_DIR/make and SOURCE_DIR/test/make
-# @arg $1 - SOURCE_DIR - Directory of the source.
-# @arg $2 - TSTART (Start time used to identify this build)
-# @arg $3 - DB_FILE - Full File Path to the DB file
-# @arg $4 - LOG_FILE - Full path to the log file.
-# @arg $5 - TBL_NAME - Name of the table to be updated.
-function test_common() {
-	local SOURCE_DIR=$1
-	local TSTART=$2
-	local DB_FILE=$3
-	local LOG_FILE=$4
-	local TBL_NAME=$5
-
-	# ================================== TEST BEGINS =======================* 
-	echo "======================= TEST $TBL_NAME BEGINS. START TIME = `date` =======================" | tee -a $LOG_FILE
-	update_test_status $TBL_NAME $DB_FILE $TSTART $STATUS_PROGRESS
-
-	# Currently snap does not support make test in the top-level Makefile.
-	# For all others, make test from SOURCE_DIR will run tests appropriately.
-	if [ "$TBL_NAME" == "$SNAP_TBL_NAME" ] 
-	then 
-		cd "$SOURCE_DIR/test"
-		make >> $LOG_FILE 2>&1
-		local RESULT=$?
-		make run >> $LOG_FILE 2>&1
-		local RESULT=$?
-	else
-		cd "$SOURCE_DIR"
-		make test >> $LOG_FILE 2>&1
-		local RESULT=$?
-	fi
-
-	echo "======================= TEST $TBL_NAME FINISH. TIME = `date` =======================" | tee -a $LOG_FILE
-
-	# Check exit status and take appropriate action $?
-	if [ $RESULT -ne 0 ]
-	then
-		# Test failed. Update DB entry.
-		echo "======================= TEST $TBL_NAME FAILED =======================" | tee -a $LOG_FILE
-		update_test_status $TBL_NAME $DB_FILE $TSTART $STATUS_FAILED
-	else
-		# Test succeeded. Update DB entry.
-		echo "======================= TEST $TBL_NAME SUCCEEDED =======================" | tee -a $LOG_FILE
-		update_test_status $TBL_NAME $DB_FILE $TSTART $STATUS_SUCCESS
-	fi
-	return $RESULT;
-}
-
-# Build, Test, Update tend and send mail on failure.
-# @arg $1 - SOURCE_DIR - Directory of the source.
-# @arg $2 - TSTART (Start time used to identify this build)
-# @arg $3 - DB_FILE - Full File Path to the DB file
-# @arg $4 - LOG_FILE - Full path to the log file.
-# @arg $5 - TBL_NAME - Name of the table to be updated.
-function process_common() {
-	local SOURCE_DIR="$1"
-	local TSTART="$2"
-	local DB_FILE="$3"
-	local LOG_FILE="$4"
-	local TBL_NAME="$5"
-
-  # Insert into the project table. Build in progress, test queued. 
-  do_sql "BEGIN; INSERT INTO $TBL_NAME VALUES(NULL, $TSTART, 0, $STATUS_PROGRESS, $STATUS_QUEUED, '$LOG_FILE_NAME'); COMMIT;" $DB_FILE
-
-	build_common $SOURCE_DIR $TSTART $DB_FILE $LOG_FILE $TBL_NAME
-	local BUILD_RESULT=$?
-	test_common $SOURCE_DIR $TSTART $DB_FILE $LOG_FILE $TBL_NAME
-	local TEST_RESULT=$?
-	update_tend $TBL_NAME $DB_FILE $TSTART
-
-	if [ "$BUILD_RESULT" -ne 0 ] || [ "$TEST_RESULT" -ne 0 ] 
-	then
-		send_mail "$MAIL_ADDRESS" "Project $TBL_NAME build failed." "Please see the attached log file and take corrective action. The status will be refreshed at http://snap.stanford.edu/snapbuild/ soon." $LOG_FILE
-	else
-		return 0
-	fi
-}
-# ************* ENDS COMMON BUILD ************** #
-
-# Parse YAML files 
-# Typical usage is eval $(parse_yaml <filename>) 
-# Will set variable global_debug="yes" for a file structured as follows
-# globals:
-#   debug: yes
-#   verbose: no
-# output:
-#   file: yes
-function parse_yaml {
-   local prefix=$2
-   local s='[[:space:]]*' w='[a-zA-Z0-9_]*' fs=$(echo @|tr @ '\034')
-   sed -ne "s|^\($s\):|\1|" \
-        -e "s|^\($s\)\($w\)$s:$s[\"']\(.*\)[\"']$s\$|\1$fs\2$fs\3|p" \
-        -e "s|^\($s\)\($w\)$s:$s\(.*\)$s\$|\1$fs\2$fs\3|p"  $1 |
-   awk -F$fs '{
-      indent = length($1)/2;
-      vname[indent] = $2;
-      for (i in vname) {if (i > indent) {delete vname[i]}}
-      if (length($3) > 0) {
-         vn=""; for (i=0; i<indent; i++) {vn=(vn)(vname[i])("_")}
-         printf("%s%s%s=\"%s\"\n", "'$prefix'",vn, $2, $3);
-      }
-   }'
 }

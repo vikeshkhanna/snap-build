@@ -1,0 +1,41 @@
+# All projects that need to be built should be under the projects key.
+# Assume that the current working directory is source directory (git clone repo && cd repo)
+# User-defined commands (like before_build) MUST leave in source directory (or user must manually cd)
+# The name of the projects should be unique and MUST match the table name in the database.
+# Mandatory keys of each project - 'git', 'build' and 'test'
+projects:
+  snapr:
+    git: "https://github.com/snap-stanford/snapr.git"
+    build: make
+    test: make test
+    mail:
+      success: "vikesh@stanford.edu"
+      failure: "vikesh@stanford.edu"
+
+  snap:
+    git: "https://github.com/snap-stanford/snap.git"
+    build: make
+    test: cd test &&  make test
+    mail:
+      success: "vikesh@stanford.edu"
+      failure: "vikesh@stanford.edu"
+
+  snappy:
+    git: "https://github.com/snap-stanford/snap-python.git"
+    before_build:
+      - cd ../ && git clone https://github.com/snap-stanford/snap.git; cd -
+    build: make
+    test: make test
+    mail:
+      success: "vikesh@stanford.edu"
+      failure: "vikesh@stanford.edu"
+
+  ringo:
+    git: "git@github.com:snap-stanford/ringo.git"
+    before_build:
+      - cd ../ && git clone https://github.com/snap-stanford/snapr.git; cd - 
+    build : make
+    test: make test
+    mail:
+      success: "vikesh@stanford.edu"
+      failure: "vikesh@stanford.edu"
