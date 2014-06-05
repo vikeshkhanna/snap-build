@@ -26,9 +26,6 @@ SNAP_DIR="$TARGET_DIR/$SNAP_TBL_NAME"
 create_dir_if_not_exists $TARGET_DIR
 create_dir_if_not_exists $LOG_DIR
 
-# Insert into the snap table. Build in progress, test queued. 
-do_sql "BEGIN; INSERT INTO $SNAP_TBL_NAME VALUES(NULL, $TSTART, 0, $STATUS_PROGRESS, $STATUS_QUEUED, '$LOG_FILE_NAME'); COMMIT;" $DB_FILE
-
 # Clone the repository into the 
 echo "======================= CLONING SNAP REPOSITORY =======================" | tee -a $LOG_FILE
 git clone $SNAP_GIT $SNAP_DIR | tee -a $LOG_FILE

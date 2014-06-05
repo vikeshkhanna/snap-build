@@ -129,6 +129,7 @@ function build_common() {
 	local LOG_FILE=$4
 	local TBL_NAME=$5
 
+
 	# ========================= MAKE BEGINS ====================================== 
 	update_build_status $TBL_NAME $DB_FILE $TSTART $STATUS_PROGRESS
 	cd $SOURCE_DIR
@@ -167,7 +168,6 @@ function test_common() {
 	# ================================== TEST BEGINS =======================* 
 	echo "======================= TEST $TBL_NAME BEGINS. START TIME = `date` =======================" | tee -a $LOG_FILE
 	update_test_status $TBL_NAME $DB_FILE $TSTART $STATUS_PROGRESS
-
 
 	# Currently snap does not support make test in the top-level Makefile.
 	# For all others, make test from SOURCE_DIR will run tests appropriately.
@@ -213,6 +213,9 @@ function process_common() {
 	local LOG_FILE="$4"
 	local TBL_NAME="$5"
 
+  # Insert into the project table. Build in progress, test queued. 
+  do_sql "BEGIN; INSERT INTO $TBL_NAME VALUES(NULL, $TSTART, 0, $STATUS_PROGRESS, $STATUS_QUEUED, '$LOG_FILE_NAME'); COMMIT;" $DB_FILE
+
 	build_common $SOURCE_DIR $TSTART $DB_FILE $LOG_FILE $TBL_NAME
 	local BUILD_RESULT=$?
 	test_common $SOURCE_DIR $TSTART $DB_FILE $LOG_FILE $TBL_NAME
@@ -227,3 +230,28 @@ function process_common() {
 	fi
 }
 # ************* ENDS COMMON BUILD ************** #
+
+# Parse YAML files 
+# Typical usage is eval $(parse_yaml <filename>) 
+# Will set variable global_debug="yes" for a file structured as follows
+# globals:
+#   debug: yes
+#   verbose: no
+# output:
+#   file: yes
+function parse_yaml {
+   local prefix=$2
+   local s='[[:space:]]*' w='[a-zA-Z0-9_]*' fs=$(echo @|tr @ '\034')
+   sed -ne "s|^\($s\):|\1|" \
+        -e "s|^\($s\)\($w\)$s:$s[\"']\(.*\)[\"']$s\$|\1$fs\2$fs\3|p" \
+        -e "s|^\($s\)\($w\)$s:$s\(.*\)$s\$|\1$fs\2$fs\3|p"  $1 |
+   awk -F$fs '{
+      indent = length($1)/2;
+      vname[indent] = $2;
+      for (i in vname) {if (i > indent) {delete vname[i]}}
+      if (length($3) > 0) {
+         vn=""; for (i=0; i<indent; i++) {vn=(vn)(vname[i])("_")}
+         printf("%s%s%s=\"%s\"\n", "'$prefix'",vn, $2, $3);
+      }
+   }'
+}
