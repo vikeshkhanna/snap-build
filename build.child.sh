@@ -52,7 +52,7 @@ MAIL_SUCCESS=`echo -e "$PROJECT_CONF" | $SHYAML get-value mail.success 2>/dev/nu
 MAIL_FAILURE=`echo -e "$PROJECT_CONF" | $SHYAML get-value mail.failure 2>/dev/null`
 
 # Insert into the project table. Build in progress, test queued. 
-do_sql "BEGIN; INSERT INTO $PROJECT_NAME VALUES(NULL, $TSTART, 0, $STATUS_PROGRESS, $STATUS_QUEUED, '$LOG_FILE_NAME'); COMMIT;" $DB_FILE
+do_sql "BEGIN; INSERT INTO status VALUES(NULL, '$PROJECT_NAME', $TSTART, 0, $STATUS_PROGRESS, $STATUS_QUEUED, '$LOG_FILE_NAME'); COMMIT;" $DB_FILE
 
 # Clone the repository.
 echo "======================= CLONING $PROJECT_NAME REPOSITORY =======================" | tee -a $LOG_FILE
@@ -119,7 +119,7 @@ fi
 
 # Update end time.
 TEND=`date +%s`
-do_sql "UPDATE $PROJECT_NAME SET tend = $TEND WHERE tstart = $TSTART;" $DB_FILE
+do_sql "UPDATE status SET tend = $TEND WHERE name = '$PROJECT_NAME' and tstart = $TSTART;" $DB_FILE
 
 # Send mails.
 if [ "$BUILD_RESULT" -ne 0 ] || [ "$TEST_RESULT" -ne 0 ] 

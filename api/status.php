@@ -7,7 +7,7 @@ $db->beginTransaction();
 $projectStatus = array();
 
 foreach($PROJECTS as $project => $label) {
-	$comm = "SELECT * FROM ".$project." ORDER BY tstart DESC LIMIT 10;";
+	$comm = "SELECT * FROM status WHERE name = '".$project."' ORDER BY tstart DESC LIMIT 10;";
 	$result = $db->prepare($comm);
 	$result->execute();
 	$rows = $result->fetchAll(PDO::FETCH_ASSOC);

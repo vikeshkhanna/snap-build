@@ -47,14 +47,14 @@ function do_sql() {
 	fi;
 }
 
-# $1: Tablename, $2: Full path to DB, $3: TSTART, $4: STATUS
+# $1: Project name, $2: Full path to DB, $3: TSTART, $4: STATUS
 function update_build_status() {
-	do_sql "UPDATE $1 SET build_status = $4 WHERE tstart = $3;" $2
+	do_sql "UPDATE status SET build_status = $4 WHERE name = '$1' and tstart = $3;" $2
 }
 
-# $1: Tablename, $2: Full path to DB, $3: TSTART, $4: STATUS
+# $1: Project name, $2: Full path to DB, $3: TSTART, $4: STATUS
 function update_test_status() {
-	do_sql "UPDATE $1 SET test_status = $4 WHERE tstart = $3;" $2
+	do_sql "UPDATE status SET test_status = $4 WHERE name = '$1' and tstart = $3;" $2
 }
 
 # Checks if a directory does not exist and creates it.
